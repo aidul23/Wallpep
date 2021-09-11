@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "182399478273",
+    "firebase_url": "https://wallpep-6ca38.firebaseio.com",
+    "project_id": "wallpep-6ca38",
+    "storage_bucket": "wallpep-6ca38.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182399478273:android:4d3e081902622975036e00",
+        "android_client_info": {
+          "package_name": "com.example.wallpep"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "182399478273-77dpt0cfjbkkpeqo87p1jgq11p3s3tcu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wallpep",
+            "certificate_hash": "641f3995c7fcfc27f3b490c1225459fa3fe6d0fd"
+          }
+        },
+        {
+          "client_id": "182399478273-2u7hsqbm2tic5nurlpgjmkl5o2i2ttbl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKCkNd4C3oms8N18xfEU-I-6OUB04pWlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "182399478273-2u7hsqbm2tic5nurlpgjmkl5o2i2ttbl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
