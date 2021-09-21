@@ -1,30 +1,20 @@
 package com.aidul23.wallpep;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.Manifest;
-import android.app.ProgressDialog;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.webkit.URLUtil;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.downloader.Error;
-import com.downloader.OnCancelListener;
-import com.downloader.OnDownloadListener;
-import com.downloader.OnPauseListener;
-import com.downloader.OnProgressListener;
-import com.downloader.OnStartOrResumeListener;
-import com.downloader.PRDownloader;
-import com.downloader.PRDownloaderConfig;
-import com.downloader.Progress;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -35,12 +25,26 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import java.io.File;
 import java.util.List;
 
-public class GalleryActivity extends AppCompatActivity {
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.transition.AutoTransition;
+import androidx.transition.TransitionManager;
+import rm.com.longpresspopup.LongPressPopup;
+import rm.com.longpresspopup.LongPressPopupBuilder;
+import rm.com.longpresspopup.PopupInflaterListener;
+import rm.com.longpresspopup.PopupOnHoverListener;
+import rm.com.longpresspopup.PopupStateListener;
+
+public class GalleryActivity extends AppCompatActivity implements PopupInflaterListener,
+        PopupStateListener, PopupOnHoverListener, View.OnClickListener {
 
     FloatingActionButton downloadButton, likeButton;
     TextView imageDescription;
     ImageModel imageModel;
-    String imageUrl;
+    ImageView expandableDownButton, imageView;
+    ImageView imagePopup;
+    LinearLayout expandableConstrainLayout, placeLayout;
     private static final String TAG = "GalleryActivity";
 
     @Override
@@ -51,6 +55,11 @@ public class GalleryActivity extends AppCompatActivity {
         downloadButton = findViewById(R.id.download_button_id);
         likeButton = findViewById(R.id.like_button_id);
         imageDescription = findViewById(R.id.image_description);
+        expandableDownButton = findViewById(R.id.expand_button);
+        expandableConstrainLayout = findViewById(R.id.expandable_place_layout);
+        placeLayout = findViewById(R.id.place_layout);
+        imageView = findViewById(R.id.image);
+
 
         Intent intent = getIntent();
         imageModel = intent.getParcelableExtra("imageModel");
@@ -73,14 +82,14 @@ public class GalleryActivity extends AppCompatActivity {
         });
 
 
-
         getIncomingIntent();
 
         // Enabling database for resume support even after the application is killed:
-        PRDownloaderConfig config = PRDownloaderConfig.newBuilder()
-                .setDatabaseEnabled(true)
-                .build();
-        PRDownloader.initialize(getApplicationContext(), config);
+//        PRDownloaderConfig config = PRDownloaderConfig.newBuilder()
+//                .setDatabaseEnabled(true)
+//                .build();
+
+//        PRDownloader.initialize(getApplicationContext(), config);
 
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +98,43 @@ public class GalleryActivity extends AppCompatActivity {
                 checkPermission();
             }
         });
+
+        expandableDownButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (expandableConstrainLayout.getVisibility() == v.GONE) {
+                    TransitionManager.beginDelayedTransition(placeLayout, new AutoTransition());
+                    expandableConstrainLayout.setVisibility(View.VISIBLE);
+                } else {
+                    TransitionManager.beginDelayedTransition(placeLayout, new AutoTransition());
+                    expandableConstrainLayout.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        LongPressPopup popup = new LongPressPopupBuilder(GalleryActivity.this)
+                .setTarget(imageView)
+                .setPopupView(R.layout.popup_layout, this)
+                .setLongPressDuration(750)
+                .setDismissOnLongPressStop(true)
+                .setDismissOnTouchOutside(true)
+                .setDismissOnBackPressed(true)
+                .setCancelTouchOnDragOutsideView(true)
+                .setLongPressReleaseListener(this)
+                .setOnHoverListener(this)
+                .setPopupListener(this)
+                .setAnimationType(LongPressPopup.ANIMATION_TYPE_FROM_CENTER)
+                .build();
+
+        popup.register();
+
+//        imageView.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+////                Toast.makeText(getApplicationContext(), ""+imageModel.getImageName(), Toast.LENGTH_SHORT).show();
+//                return true;
+//            }
+//        });
     }
 
 
@@ -100,7 +146,6 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     private void setImage(String imageUrl) {
-        ImageView imageView = findViewById(R.id.image);
         Glide.with(this).asDrawable().load(imageUrl).into(imageView);
     }
 
@@ -112,73 +157,65 @@ public class GalleryActivity extends AppCompatActivity {
                 ).withListener(new MultiplePermissionsListener() {
             @Override public void onPermissionsChecked(MultiplePermissionsReport report) {
                 if(report.areAllPermissionsGranted()) {
-                    downloadImage();
-                }
-                else {
+                    downloadImage(imageModel.getImageName(), imageModel.getImageUrl());
+                } else {
                     Toast.makeText(GalleryActivity.this, "Error 404!", Toast.LENGTH_SHORT).show();
                 }
             }
-            @Override public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
-                    token.continuePermissionRequest();
+
+            @Override
+            public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                token.continuePermissionRequest();
             }
         }).check();
     }
 
-    private void downloadImage() {
-        ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Downloading...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+    private void downloadImage(String fileName, String ImageUrl) {
+        try {
+            DownloadManager downloadManager = null;
+            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            Uri downloadUri = Uri.parse(ImageUrl);
+            DownloadManager.Request request = new DownloadManager.Request(downloadUri);
 
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE)
+                    .setAllowedOverRoaming(false)
+                    .setTitle(fileName)
+                    .setMimeType("image/jpeg")
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, File.separator + fileName);
 
-        if (imageModel.getImageUrl() != null) {
-            imageUrl = imageModel.getImageUrl();
-            setImage(imageUrl);
+            downloadManager.enqueue(request);
+
+            Toast.makeText(getApplicationContext(), "Downloading...", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), "Download Failed!", Toast.LENGTH_SHORT).show();
         }
+    }
 
-        File file = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        Log.d(TAG, "downloadImage: "+imageUrl);
-        PRDownloader.download(imageUrl, file.getPath(), URLUtil.guessFileName(imageUrl,null,null))
-                .build()
-                .setOnStartOrResumeListener(new OnStartOrResumeListener() {
-                    @Override
-                    public void onStartOrResume() {
+    @Override
+    public void onViewInflated(@Nullable String popupTag, View root) {
+        imagePopup = root.findViewById(R.id.image_popup);
 
-                    }
-                })
-                .setOnPauseListener(new OnPauseListener() {
-                    @Override
-                    public void onPause() {
+    }
 
-                    }
-                })
-                .setOnCancelListener(new OnCancelListener() {
-                    @Override
-                    public void onCancel() {
+    @Override
+    public void onHoverChanged(View view, boolean isHovered) {
 
-                    }
-                })
-                .setOnProgressListener(new OnProgressListener() {
-                    @Override
-                    public void onProgress(Progress progress) {
-                        long percentage = progress.currentBytes * 100 / progress.totalBytes;
-                        progressDialog.setMessage("Downloading "+percentage+" %");
-                    }
-                })
-                .start(new OnDownloadListener() {
-                    @Override
-                    public void onDownloadComplete() {
-                        progressDialog.dismiss();
-                        Toast.makeText(GalleryActivity.this, "Download Complete!", Toast.LENGTH_SHORT).show();
-                    }
+    }
 
-                    @Override
-                    public void onError(Error error) {
-                        Log.d(TAG, "onError: "+error.getServerErrorMessage());
-                        Toast.makeText(GalleryActivity.this, ""+error.toString(), Toast.LENGTH_SHORT).show();
-                    }
+    @Override
+    public void onPopupShow(@Nullable String popupTag) {
+        Glide.with(this).asDrawable().load(imageModel.getImageUrl()).into(imagePopup);
+    }
 
-                });
+    @Override
+    public void onPopupDismiss(@Nullable String popupTag) {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 
 }

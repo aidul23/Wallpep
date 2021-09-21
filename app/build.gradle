@@ -52,4 +52,7 @@ dependencies {
     implementation 'com.karumi:dexter:6.2.3'
 
     implementation 'com.mindorks.android:prdownloader:0.6.0'
+
+    implementation 'com.rm:longpresspopup:1.0.1'
+
 }

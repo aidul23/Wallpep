@@ -1,13 +1,7 @@
 package com.aidul23.wallpep;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,14 +9,16 @@ import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -46,18 +42,18 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         profile = findViewById(R.id.profile_Picture_home_id);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        Uri photoUrl = user.getPhotoUrl();
-        profileInfo = new ProfileInfo(null,null,photoUrl);
-
-        Picasso.get()
-                .load(profileInfo.getImage())
-                .into(profile);
+//        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+//        Uri photoUrl = user.getPhotoUrl();
+//        profileInfo = new ProfileInfo(null,null,photoUrl);
+//
+//        Picasso.get()
+//                .load(profileInfo.getImage())
+//                .into(profile);
 
         profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(HomeActivity.this,ProfileActivity.class);
+                Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
                 startActivity(intent);
             }
         });
