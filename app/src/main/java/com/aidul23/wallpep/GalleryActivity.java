@@ -44,6 +44,7 @@ public class GalleryActivity extends AppCompatActivity implements PopupInflaterL
     ImageModel imageModel;
     ImageView expandableDownButton, imageView;
     ImageView imagePopup;
+    Boolean isLiked;
     LinearLayout expandableConstrainLayout, placeLayout;
     private static final String TAG = "GalleryActivity";
 
@@ -98,6 +99,24 @@ public class GalleryActivity extends AppCompatActivity implements PopupInflaterL
                 checkPermission();
             }
         });
+
+        isLiked = imageModel.getLiked();
+
+        likeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isLiked) {
+                    imageView.setImageResource(R.drawable.ic_like_fill);
+                    isLiked = false;
+                } else {
+                    isLiked = true;
+                    imageView.setImageResource(R.drawable.ic_like);
+                }
+            }
+        });
+
+        Log.d(TAG, "onCreate: " + isLiked);
+
 
         expandableDownButton.setOnClickListener(new View.OnClickListener() {
             @Override

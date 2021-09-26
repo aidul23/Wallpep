@@ -80,27 +80,7 @@
                     android:textSize="13sp"
                     android:fontFamily="@font/quicksand_regular" />
 
-                <LinearLayout
-                    android:id="@+id/place_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp">
 
-                    <LinearLayout
-                        android:id="@+id/expandable_place_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:visibility="gone">
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="120dp"
-                            android:scaleType="centerCrop"
-                            android:src="@color/browser_actions_bg_grey" />
-
-                    </LinearLayout>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -132,6 +112,28 @@
                             app:layout_constraintTop_toTopOf="@id/imageView" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <LinearLayout
+                    android:id="@+id/place_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <LinearLayout
+                        android:id="@+id/expandable_place_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/google_map" />
+
+                    </LinearLayout>
 
 
                 </LinearLayout>

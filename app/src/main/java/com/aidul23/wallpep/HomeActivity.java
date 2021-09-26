@@ -58,15 +58,6 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-//        mRecyclerView = findViewById(R.id.category_recyclerView_id);
-//        mRecyclerView.setHasFixedSize(true);
-//        mLayoutManager = new LinearLayoutManager(this);
-//        mAdapter = new CategoryAdapter(examplelist);
-//
-//        mRecyclerView.setLayoutManager(mLayoutManager);
-//        mRecyclerView.setAdapter(mAdapter);
-//        mRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false));
-
 
         staggeredRv = findViewById(R.id.recyclerViewId);
         manager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
