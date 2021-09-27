@@ -14,8 +14,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.transition.AutoTransition;
+import androidx.transition.TransitionManager;
+
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -25,11 +33,6 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import java.io.File;
 import java.util.List;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.transition.AutoTransition;
-import androidx.transition.TransitionManager;
 import rm.com.longpresspopup.LongPressPopup;
 import rm.com.longpresspopup.LongPressPopupBuilder;
 import rm.com.longpresspopup.PopupInflaterListener;
@@ -44,7 +47,7 @@ public class GalleryActivity extends AppCompatActivity implements PopupInflaterL
     ImageModel imageModel;
     ImageView expandableDownButton, imageView;
     ImageView imagePopup;
-    Boolean isLiked;
+    boolean isLiked;
     LinearLayout expandableConstrainLayout, placeLayout;
     private static final String TAG = "GalleryActivity";
 
@@ -100,22 +103,29 @@ public class GalleryActivity extends AppCompatActivity implements PopupInflaterL
             }
         });
 
-        isLiked = imageModel.getLiked();
+        isLiked = imageModel.isLiked();
+        Log.d(TAG, "onCreate: " + isLiked);
+
+        if (isLiked) {
+            likeButton.setImageResource(R.drawable.ic_like_fill);
+        } else {
+            likeButton.setImageResource(R.drawable.ic_like);
+        }
 
         likeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isLiked) {
-                    imageView.setImageResource(R.drawable.ic_like_fill);
+                    likeButton.setImageResource(R.drawable.ic_like);
                     isLiked = false;
                 } else {
                     isLiked = true;
-                    imageView.setImageResource(R.drawable.ic_like);
+                    likeButton.setImageResource(R.drawable.ic_like_fill);
                 }
+
+                changeLikeOnDatabase(isLiked);
             }
         });
-
-        Log.d(TAG, "onCreate: " + isLiked);
 
 
         expandableDownButton.setOnClickListener(new View.OnClickListener() {
@@ -174,8 +184,9 @@ public class GalleryActivity extends AppCompatActivity implements PopupInflaterL
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ).withListener(new MultiplePermissionsListener() {
-            @Override public void onPermissionsChecked(MultiplePermissionsReport report) {
-                if(report.areAllPermissionsGranted()) {
+            @Override
+            public void onPermissionsChecked(MultiplePermissionsReport report) {
+                if (report.areAllPermissionsGranted()) {
                     downloadImage(imageModel.getImageName(), imageModel.getImageUrl());
                 } else {
                     Toast.makeText(GalleryActivity.this, "Error 404!", Toast.LENGTH_SHORT).show();
@@ -235,6 +246,17 @@ public class GalleryActivity extends AppCompatActivity implements PopupInflaterL
     @Override
     public void onClick(View v) {
 
+    }
+
+    private void changeLikeOnDatabase(boolean isLiked) {
+        FirebaseFirestore.getInstance().collection("all").document(imageModel.getId())
+                .update("isLiked", isLiked)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Toast.makeText(GalleryActivity.this, "You " + String.format("%s", isLiked ? "liked" : "disliked") + " the photo", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 }

@@ -7,6 +7,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -14,11 +19,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -67,6 +67,8 @@ public class HomeActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         EventChangeListener();
+
+
     }
 
     private void EventChangeListener() {
@@ -76,9 +78,18 @@ public class HomeActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         for(DocumentSnapshot snapshot: queryDocumentSnapshots.getDocuments()) {
-                            Log.d(TAG, "onSuccess: "+snapshot.getId());
-                            mImages.add(snapshot.toObject(ImageModel.class));
+                            ImageModel imageModel = new ImageModel(
+                                    snapshot.getData().get("imageDescription").toString(),
+                                    snapshot.getData().get("imageName").toString(),
+                                    snapshot.getData().get("imageUrl").toString(),
+                                    Boolean.valueOf(snapshot.getData().get("isLiked").toString())
+                            );
+                            imageModel.setId(snapshot.getReference().getId());
+                            mImages.add(imageModel);
+                            Log.d(TAG, "onSuccess: " + imageModel.toString());
                         }
+
+
                         adapter = new StaggeredRecyclerViewAdapter(mImages);
                         staggeredRv.setAdapter(adapter);
                         adapter.notifyDataSetChanged();
